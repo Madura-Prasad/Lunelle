@@ -60,6 +60,153 @@ const PROMO = {
 
 
 /* =====================================================
+   PRODUCT PHOTOS
+   ---------------------------------------------------
+   Photos are always local — nothing is ever pulled from
+   the internet. For a slide to show a real photo, drop a
+   file into images/products/ named after the product id
+   and the slide number, e.g.
+
+       images/products/1-1.jpg   (product id 1, slide 1)
+       images/products/1-2.jpg   (product id 1, slide 2)
+       images/products/1-3.jpg   (product id 1, slide 3)
+
+   If a slide's file is missing, that slide just falls
+   back to showing the plain swatch color set in the
+   product's "images" array below (e.g. "pink") — no photo,
+   no broken image, no online link ever loads.
+
+   WANT TO POINT AT AN EXACT FILE NAME INSTEAD?
+   Add image1 / image2 / image3 directly on that product
+   object down in the PRODUCTS list below, e.g.
+     image1: "images/products/my-file.jpg"
+   Add just image1 if you only have one photo — the rest
+   will fall back automatically. See the "Satin Headband"
+   product below for a working example.
+===================================================== */
+
+
+/* =====================================================
+   PHOTO SOURCES FOR ONE SLIDE
+   ---------------------------------------------------
+   Builds the ordered list of image paths to try for a
+   given product + slide (0, 1 or 2), from most to least
+   specific:
+
+     1. product.image1 / image2 / image3 — set these directly
+        on a product below to pin its EXACT pictures. Each one
+        should be a local file you added yourself, e.g.
+          "images/products/satin-headband-1.jpg"
+        The photo just crossfades in, nothing about the card
+        re-renders.
+
+     2. images/products/<id>-<slide>.jpg — the old convention:
+        drop a file there named after the product id and it's
+        picked up automatically, no code change needed.
+
+   If neither exists, the slide just shows the plain swatch
+   color from the product's "images" array — nothing is ever
+   fetched from the internet.
+===================================================== */
+
+function buildPhotoCandidates(product, slideIndex) {
+
+    const candidates = [];
+
+
+    const ownPhoto =
+        product[`image${slideIndex + 1}`];
+
+    if (ownPhoto) {
+
+        candidates.push(ownPhoto);
+
+    }
+
+
+    candidates.push(
+        `images/products/${product.id}-${slideIndex + 1}.jpg`
+    );
+
+
+    return candidates;
+
+}
+
+
+/* =====================================================
+   PHOTO LOADING (no card / DOM re-render)
+   ---------------------------------------------------
+   setPhotoSrc() is the ONLY thing that changes a product
+   photo — on first render AND every time the slider moves.
+   It never rebuilds or replaces the <article class="product">
+   card, so nothing else on the card (badge, price, rating,
+   entrance animation, etc.) ever "refreshes" or flickers.
+   It just crossfades the <img> itself via the .photo-ready
+   opacity transition in style.css.
+===================================================== */
+
+function setPhotoSrc(imgEl, candidateList) {
+
+    if (!imgEl) return;
+
+
+    imgEl.classList.remove("photo-ready");
+
+
+    const candidates =
+        (candidateList || []).filter(Boolean);
+
+    let attempt = 0;
+
+
+    const tryNext = () => {
+
+        if (attempt >= candidates.length) {
+
+            // Nothing loaded — leave the swatch color showing
+            imgEl.removeAttribute("src");
+
+            return;
+
+        }
+
+
+        const candidate =
+            candidates[attempt];
+
+        attempt++;
+
+
+        const preloader =
+            new Image();
+
+        preloader.onload = () => {
+
+            imgEl.src = candidate;
+
+            // Next frame, so the opacity transition actually runs
+            requestAnimationFrame(() => {
+
+                imgEl.classList.add("photo-ready");
+
+            });
+
+        };
+
+        preloader.onerror = tryNext;
+
+        preloader.src = candidate;
+
+    };
+
+
+    tryNext();
+
+}
+
+
+/* =====================================================
    AD INJECTION
    Safely injects ad HTML (including <script> tags, which
    .innerHTML alone will not execute) into a given element.
@@ -125,6 +272,30 @@ function loadAds() {
    Categories: press-on, nail-art, care, tools, hair, costumes
    Each product has an "images" array (3 swatches) that the
    product card slides through.
+
+   ADDING A NEW PRODUCT — copy any block below and change:
+     id           → a number no other product uses
+     name         → shown on the card
+     category     → one of the 6 categories above (controls
+                     which filter tab shows it)
+     price, stock → numbers
+     images       → 3 swatch-color names, any of: pink,
+                     chrome-product, french-product,
+                     rose-product, lilac, peach, gold,
+                     mint, berry
+     badge        → small pill text, e.g. "NEW"
+     rating       → 0–5, shown as stars
+     description  → short line under the name
+     generic:true → optional, use for non-nail items (hair,
+                     costumes) to get a round silhouette
+                     instead of the nail shape
+     image1/2/3   → optional — your OWN local photos for this
+                     exact product, e.g.
+                     "images/products/my-photo-1.jpg". Add
+                     just image1 if you only have one photo —
+                     the rest will fall back automatically.
+                     See the "Satin Headband" product below
+                     for a working example.
 ===================================================== */
 
 const products = [
@@ -359,7 +530,17 @@ const products = [
         badge: "NEW",
         generic: true,
         rating: 4.7,
-        description: "Padded satin • One size"
+        description: "Padded satin • One size",
+
+        // YOUR OWN PHOTOS for this product — local files only.
+        // Drop real files into images/products/ and point to
+        // them here, e.g. "images/products/satin-headband-1.jpg".
+        // Leave them as empty strings ("") to just use the
+        // automatic images/products/<id>-<slide>.jpg convention
+        // (or the plain swatch color if no file exists there).
+        image1: "",
+        image2: "",
+        image3: ""
     },
 
 
@@ -416,156 +597,63 @@ const products = [
 ===================================================== */
 
 const reviews = [
+
     {
         name: "Emma",
         initial: "E",
-        rating: 4.8,
-        quote: "I love how delicate the floral nail designs look. They are feminine without feeling too much."
+        rating: 5,
+        quote: "The clean French style is exactly the aesthetic I was looking for. So pretty!"
     },
+
     {
         name: "Sophia",
         initial: "S",
         rating: 5,
-        quote: "The soft pink shades are absolutely beautiful. Perfect for an everyday clean-girl look."
+        quote: "I absolutely love the soft pink collection. It gives such a beautiful everyday look."
     },
-    {
-        name: "Olivia",
-        initial: "O",
-        rating: 4.7,
-        quote: "So many pretty ideas in one place. The pearl nail designs are definitely my favorite."
-    },
-    {
-        name: "Ava",
-        initial: "A",
-        rating: 4.9,
-        quote: "The chrome nail inspiration is gorgeous. I saved so many designs for my next appointment."
-    },
+
     {
         name: "Mia",
         initial: "M",
-        rating: 4.6,
-        quote: "Really pretty collection of nail ideas, especially if you like simple and elegant styles."
-    },
-    {
-        name: "Charlotte",
-        initial: "C",
         rating: 5,
-        quote: "The French tip ideas are exactly what I was looking for. Simple, classy and so easy to love."
+        quote: "Chrome nails are having a moment and these designs are seriously gorgeous."
     },
-    {
-        name: "Amelia",
-        initial: "A",
-        rating: 4.5,
-        quote: "I found so many cute designs for my next manicure. The pastel collection is gorgeous."
-    },
-    {
-        name: "Harper",
-        initial: "H",
-        rating: 4.8,
-        quote: "The minimalist nail designs are beautiful. I especially love the tiny details and neutral colors."
-    },
-    {
-        name: "Evelyn",
-        initial: "E",
-        rating: 4.9,
-        quote: "Such a pretty selection of nail inspiration. The glazed and pearl styles are stunning."
-    },
-    {
-        name: "Lily",
-        initial: "L",
-        rating: 4.7,
-        quote: "I usually go for simple nails, so the nude and blush designs caught my eye immediately."
-    },
-    {
-        name: "Ella",
-        initial: "E",
-        rating: 5,
-        quote: "The bow nail designs are adorable! Definitely saving a few of these for the holidays."
-    },
-    {
-        name: "Scarlett",
-        initial: "S",
-        rating: 4.6,
-        quote: "Beautiful ideas for both short and long nails. The neutral collection is my favorite."
-    },
-    {
-        name: "Grace",
-        initial: "G",
-        rating: 4.8,
-        quote: "The designs feel trendy but still wearable. I found several looks I would actually try."
-    },
+
     {
         name: "Chloe",
         initial: "C",
-        rating: 4.9,
-        quote: "Love the little floral details. Everything looks so soft, feminine and elegant."
-    },
-    {
-        name: "Isla",
-        initial: "I",
-        rating: 4.4,
-        quote: "Lots of cute inspiration here. I especially liked the simple pink and white combinations."
-    },
-    {
-        name: "Sofia",
-        initial: "S",
-        rating: 5,
-        quote: "The glossy nude nail ideas are gorgeous. They give that clean and polished look I love."
-    },
-    {
-        name: "Aria",
-        initial: "A",
-        rating: 4.7,
-        quote: "I came for nail inspiration and ended up saving almost every chrome design I saw."
-    },
-    {
-        name: "Riley",
-        initial: "R",
-        rating: 4.5,
-        quote: "Really cute collection, especially the shorter nail designs. Very easy to recreate."
-    },
-    {
-        name: "Nora",
-        initial: "N",
         rating: 4.8,
-        quote: "The tiny heart and pearl details are so cute. Perfect inspiration for a feminine manicure."
+        quote: "The nail art set held up for almost three weeks with zero chipping. Worth every penny."
     },
+
     {
-        name: "Hannah",
-        initial: "H",
-        rating: 4.6,
-        quote: "I love the variety here. There are simple everyday ideas as well as prettier statement looks."
+        name: "Ava",
+        initial: "A",
+        rating: 5,
+        quote: "Ordered the scrunchie set on a whim and now it's my go-to gift for friends."
     },
+
     {
-        name: "Victoria",
-        initial: "V",
-        rating: 4.9,
-        quote: "The elegant French designs are my favorite. They look timeless and work with almost anything."
+        name: "Grace",
+        initial: "G",
+        rating: 4.7,
+        quote: "Fast shipping to the US and the packaging alone felt like a treat to open."
     },
+
     {
-        name: "Layla",
+        name: "Zara",
+        initial: "Z",
+        rating: 5,
+        quote: "The pearl hair clips are so much sturdier than I expected for the price."
+    },
+
+    {
+        name: "Lily",
         initial: "L",
-        rating: 5,
-        quote: "The pastel nail collection is so pretty and perfect for spring. Absolutely love the color combinations."
-    },
-    {
-        name: "Madison",
-        initial: "M",
-        rating: 4.7,
-        quote: "The simple nail art ideas are exactly my style. Pretty without being overly complicated."
-    },
-    {
-        name: "Ruby",
-        initial: "R",
-        rating: 4.8,
-        quote: "The glossy red and burgundy designs are stunning. Perfect inspiration for a night-out manicure."
-    },
-    {
-        name: "Alice",
-        initial: "A",
-        rating: 4.5,
-        quote: "So many beautiful designs to choose from. I especially liked the minimalist and nude collections."
+        rating: 4.9,
+        quote: "My go-to shop before any night out — the party jewel set matches everything."
     }
+
 ];
 
 
@@ -732,7 +820,59 @@ function renderReviews() {
 
     // Slower scroll for more reviews, faster for fewer
     track.style.animationDuration =
-        (reviews.length * 20) + "s";
+        (reviews.length * 12) + "s";
+
+}
+
+
+/* =====================================================
+   SCROLL REVEAL
+   Fades + rises .reveal elements (collection cards, why
+   cards, inspiration pins) into place the first time each
+   one enters the viewport.
+===================================================== */
+
+function initScrollReveal() {
+
+    const targets =
+        document.querySelectorAll(".reveal");
+
+
+    if (!("IntersectionObserver" in window)) {
+
+        targets.forEach(
+            el => el.classList.add("in-view")
+        );
+
+        return;
+
+    }
+
+
+    const observer =
+        new IntersectionObserver(
+            function(entries) {
+
+                entries.forEach(entry => {
+
+                    if (entry.isIntersecting) {
+
+                        entry.target.classList.add("in-view");
+
+                        observer.unobserve(entry.target);
+
+                    }
+
+                });
+
+            },
+            { threshold: 0.15 }
+        );
+
+
+    targets.forEach(
+        el => observer.observe(el)
+    );
 
 }
 
@@ -753,7 +893,154 @@ function saveCart() {
 
 /* =====================================================
    RENDER PRODUCTS
+   ---------------------------------------------------
+   The <img class="product-photo"> starts with NO src —
+   setPhotoSrc() (called right after insertion, and again
+   whenever the slide changes) is what actually loads and
+   crossfades the picture in. This keeps first render and
+   slide changes using the exact same code path.
 ===================================================== */
+
+function productCardHTML(product) {
+
+    const soldOut =
+        product.stock <= 0;
+
+    const slide =
+        currentSlide[product.id] || 0;
+
+    const shapeClass =
+        product.generic
+        ? "generic"
+        : "";
+
+
+    const dots =
+        product.images
+            .map((image, index) => `
+                <button
+                    class="slide-dot
+                    ${index === slide ? "active" : ""}"
+                    data-dot="${product.id}"
+                    data-index="${index}"
+                    aria-label="Show photo ${index + 1}"
+                ></button>
+            `)
+            .join("");
+
+
+    return `
+
+        <article
+            class="product
+            ${soldOut ? "sold-out" : ""}"
+            data-product-id="${product.id}"
+        >
+
+            <div
+                class="product-image
+                ${shapeClass}
+                ${product.images[slide]}"
+                data-image-wrap="${product.id}"
+            >
+
+                <img
+                    class="product-photo"
+                    alt="${product.name}"
+                    loading="lazy"
+                    data-photo="${product.id}"
+                >
+
+                <span class="badge">
+                    ${product.badge}
+                </span>
+
+
+                <button
+                    class="slide-arrow slide-prev"
+                    data-slide-prev="${product.id}"
+                    aria-label="Previous photo"
+                >
+                    ‹
+                </button>
+
+                <button
+                    class="slide-arrow slide-next"
+                    data-slide-next="${product.id}"
+                    aria-label="Next photo"
+                >
+                    ›
+                </button>
+
+
+                <div class="slide-dots" data-dots="${product.id}">
+                    ${dots}
+                </div>
+
+            </div>
+
+
+            <div class="product-info">
+
+                <h3>
+                    ${product.name}
+                </h3>
+
+
+                <div class="rating">
+
+                    ${renderStars(product.rating)}
+
+                    <span>
+                        ${product.rating}
+                    </span>
+
+                </div>
+
+
+                <div class="product-description">
+
+                    ${product.description}
+
+                    ${
+                        soldOut
+                        ? " • Currently unavailable"
+                        : ""
+                    }
+
+                </div>
+
+
+                <div class="price-row">
+
+                    <strong class="price">
+                        ${money(product.price)}
+                    </strong>
+
+
+                    <button
+                        class="add-button"
+                        data-add="${product.id}"
+                    >
+
+                        ${
+                            soldOut
+                            ? "Sold Out"
+                            : "Add to bag"
+                        }
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    `;
+
+}
+
 
 function renderProducts() {
 
@@ -773,144 +1060,107 @@ function renderProducts() {
 
 
     productsContainer.innerHTML =
-        list.map(product => {
-
-            const soldOut =
-                product.stock <= 0;
-
-            const slide =
-                currentSlide[product.id] || 0;
-
-            const shapeClass =
-                product.generic
-                ? "generic"
-                : "";
+        list.map(productCardHTML).join("");
 
 
-            const dots =
-                product.images
-                    .map((image, index) => `
-                        <button
-                            class="slide-dot
-                            ${index === slide ? "active" : ""}"
-                            data-dot="${product.id}"
-                            data-index="${index}"
-                            aria-label="Show photo ${index + 1}"
-                        ></button>
-                    `)
-                    .join("");
+    // Now that the <img> tags exist in the DOM, load each one's
+    // local photo, if one exists.
+    list.forEach(product => {
+
+        const slide =
+            currentSlide[product.id] || 0;
+
+        const imgEl =
+            productsContainer.querySelector(
+                `[data-photo="${product.id}"]`
+            );
+
+        setPhotoSrc(
+            imgEl,
+            buildPhotoCandidates(product, slide)
+        );
+
+    });
+
+}
 
 
-            return `
+/* =====================================================
+   UPDATE A CARD'S SLIDE IN PLACE
+   ---------------------------------------------------
+   Used by the slider arrows/dots. Only touches the photo,
+   the swatch-color class and the dots for ONE card — the
+   <article> itself is never removed or recreated, so its
+   entrance animation never replays and nothing on the rest
+   of the card (or the rest of the grid) "refreshes".
+===================================================== */
 
-                <article
-                    class="product
-                    ${soldOut ? "sold-out" : ""}"
-                >
+function updateProductSlide(productId) {
 
-                    <div
-                        class="product-image
-                        ${shapeClass}
-                        ${product.images[slide]}"
-                    >
+    const product =
+        products.find(
+            item => item.id === productId
+        );
 
-                        <img
-                            class="product-photo"
-                            src="images/products/${product.id}-${slide + 1}.jpg"
-                            alt="${product.name}"
-                            loading="lazy"
-                            onerror="this.style.display='none'"
-                        >
-
-                        <span class="badge">
-                            ${product.badge}
-                        </span>
+    if (!product) return;
 
 
-                        <button
-                            class="slide-arrow slide-prev"
-                            data-slide-prev="${product.id}"
-                            aria-label="Previous photo"
-                        >
-                            ‹
-                        </button>
-
-                        <button
-                            class="slide-arrow slide-next"
-                            data-slide-next="${product.id}"
-                            aria-label="Next photo"
-                        >
-                            ›
-                        </button>
+    const slide =
+        currentSlide[productId] || 0;
 
 
-                        <div class="slide-dots">
-                            ${dots}
-                        </div>
+    // Swap the background swatch color behind the photo
+    const imageWrap =
+        productsContainer.querySelector(
+            `[data-image-wrap="${productId}"]`
+        );
 
-                    </div>
+    if (imageWrap) {
 
+        const swatchClasses =
+            ["pink", "chrome-product", "french-product",
+             "rose-product", "lilac", "peach", "gold",
+             "mint", "berry"];
 
-                    <div class="product-info">
+        imageWrap.classList.remove(...swatchClasses);
 
-                        <h3>
-                            ${product.name}
-                        </h3>
+        imageWrap.classList.add(product.images[slide]);
 
-
-                        <div class="rating">
-
-                            ${renderStars(product.rating)}
-
-                            <span>
-                                ${product.rating}
-                            </span>
-
-                        </div>
+    }
 
 
-                        <div class="product-description">
+    // Crossfade in the new photo (local only, nothing online)
+    const imgEl =
+        productsContainer.querySelector(
+            `[data-photo="${productId}"]`
+        );
 
-                            ${product.description}
-
-                            ${
-                                soldOut
-                                ? " • Currently unavailable"
-                                : ""
-                            }
-
-                        </div>
-
-
-                        <div class="price-row">
-
-                            <strong class="price">
-                                ${money(product.price)}
-                            </strong>
+    setPhotoSrc(
+        imgEl,
+        buildPhotoCandidates(product, slide)
+    );
 
 
-                            <button
-                                class="add-button"
-                                data-add="${product.id}"
-                            >
+    // Update which dot is active
+    const dotsWrap =
+        productsContainer.querySelector(
+            `[data-dots="${productId}"]`
+        );
 
-                                ${
-                                    soldOut
-                                    ? "Sold Out"
-                                    : "Add to bag"
-                                }
+    if (dotsWrap) {
 
-                            </button>
+        dotsWrap
+            .querySelectorAll(".slide-dot")
+            .forEach(dot => {
 
-                        </div>
+                dot.classList.toggle(
+                    "active",
+                    Number(dot.dataset.index) === slide
+                );
 
-                    </div>
+            });
 
-                </article>
-
-            `;
-
-        }).join("");
+    }
 
 }
 
@@ -941,7 +1191,7 @@ function changeSlide(productId, direction) {
         (current + direction + total) % total;
 
 
-    renderProducts();
+    updateProductSlide(productId);
 
 }
 
@@ -950,7 +1200,7 @@ function setSlide(productId, index) {
 
     currentSlide[productId] = index;
 
-    renderProducts();
+    updateProductSlide(productId);
 
 }
 
@@ -1082,10 +1332,9 @@ function renderCart() {
                     >
                         <img
                             class="product-photo"
-                            src="images/products/${product.id}-1.jpg"
                             alt="${product.name}"
                             loading="lazy"
-                            onerror="this.style.display='none'"
+                            data-cart-photo="${product.id}"
                         >
                     </div>
 
@@ -1136,6 +1385,25 @@ function renderCart() {
             `;
 
         }).join("");
+
+
+    // Same load-after-insert pattern as the product grid
+    cart.forEach(item => {
+
+        const product =
+            products.find(p => p.id === item.id);
+
+        const imgEl =
+            cartItems.querySelector(
+                `[data-cart-photo="${item.id}"]`
+            );
+
+        setPhotoSrc(
+            imgEl,
+            buildPhotoCandidates(product, 0)
+        );
+
+    });
 
 
     const merchandiseSubtotal =
@@ -2056,6 +2324,8 @@ renderProducts();
 renderCart();
 
 renderReviews();
+
+initScrollReveal();
 
 
 // Countdown keeps running (and looping) in the background

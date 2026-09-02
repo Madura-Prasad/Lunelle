@@ -443,6 +443,23 @@ a {
     padding: 85px 7vw;
 }
 
+/* Scroll-reveal: elements fade + rise into place the first time
+   they enter the viewport (see initScrollReveal in script.js) */
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .7s ease, transform .7s ease;
+}
+
+.reveal.in-view {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.reveal:nth-child(2) { transition-delay: .08s; }
+.reveal:nth-child(3) { transition-delay: .16s; }
+.reveal:nth-child(4) { transition-delay: .24s; }
+
 .section-heading {
     display: flex;
     justify-content: space-between;
@@ -584,7 +601,33 @@ a {
     border-radius: 19px;
     overflow: hidden;
     border: 1px solid var(--border);
-    transition: .3s;
+    transition: transform .3s, box-shadow .3s;
+    animation: cardFadeIn .5s ease backwards;
+}
+
+.product:nth-child(1) { animation-delay: .02s; }
+.product:nth-child(2) { animation-delay: .06s; }
+.product:nth-child(3) { animation-delay: .10s; }
+.product:nth-child(4) { animation-delay: .14s; }
+.product:nth-child(5) { animation-delay: .18s; }
+.product:nth-child(6) { animation-delay: .22s; }
+.product:nth-child(7) { animation-delay: .26s; }
+.product:nth-child(8) { animation-delay: .30s; }
+.product:nth-child(9) { animation-delay: .34s; }
+.product:nth-child(n+10) { animation-delay: .38s; }
+
+@keyframes cardFadeIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
 }
 
 .product:hover {
@@ -610,8 +653,12 @@ a {
 
 /* Real product photo, if present, layers over the illustration.
    Drop matching files into images/products/ (see PHOTO-GUIDE.md)
-   and they show automatically; otherwise the illustration below
-   stays visible. */
+   and they show automatically; otherwise a copyright-free stock
+   photo (or the plain illustration) is used instead. The photo
+   crossfades smoothly on first mount AND whenever its src is
+   swapped by the slider — see setPhotoSrc() in script.js, which
+   drives this purely through the opacity transition below rather
+   than by replacing any DOM nodes. */
 .product-photo {
     position: absolute;
     inset: 0;
@@ -619,6 +666,12 @@ a {
     height: 100%;
     object-fit: cover;
     z-index: 2;
+    opacity: 0;
+    transition: opacity .35s ease;
+}
+
+.product-photo.photo-ready {
+    opacity: 1;
 }
 
 /* Soft glass-like sheen over every product image — sits above the
@@ -1228,11 +1281,14 @@ footer p {
     inset: 0;
     background: rgba(30,20,25,.6);
     z-index: 80;
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease, visibility .5s ease;
 }
 
 .overlay.show {
-    display: block;
+    opacity: 1;
+    visibility: visible;
 }
 
 .cart {
@@ -1244,7 +1300,7 @@ footer p {
     background: white;
     z-index: 81;
     transform: translateX(100%);
-    transition: .35s;
+    transition: transform .65s cubic-bezier(.16,1,.3,1);
     display: flex;
     flex-direction: column;
 }
@@ -1422,6 +1478,21 @@ footer p {
 
 .discount-row.show {
     display: flex;
+    animation: discountReveal .45s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes discountReveal {
+
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
 }
 
 .totals-row.grand-total {
@@ -1459,13 +1530,17 @@ footer p {
     inset: 0;
     background: rgba(25,18,21,.68);
     z-index: 120;
-    display: none;
+    display: grid;
     place-items: center;
     padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .4s ease, visibility .4s ease;
 }
 
 .modal-overlay.show {
-    display: grid;
+    opacity: 1;
+    visibility: visible;
 }
 
 .stock-modal {
@@ -1475,6 +1550,14 @@ footer p {
     padding: 40px;
     text-align: center;
     position: relative;
+    transform: scale(.85) translateY(24px);
+    opacity: 0;
+    transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .35s ease;
+}
+
+.modal-overlay.show .stock-modal {
+    transform: scale(1) translateY(0);
+    opacity: 1;
 }
 
 .modal-close {
