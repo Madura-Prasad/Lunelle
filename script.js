@@ -296,6 +296,13 @@ function loadAds() {
                      the rest will fall back automatically.
                      See the "Satin Headband" product below
                      for a working example.
+     recentSales  → optional — a number, e.g. 14. When set,
+                     shows a small urgency badge on the card
+                     ("14+ sold in last 24h"). Leave it off
+                     entirely for products that shouldn't show
+                     this (most products should NOT have it —
+                     it loses its urgency effect if every card
+                     has one).
 ===================================================== */
 
 const products = [
@@ -311,7 +318,8 @@ const products = [
         images: ["pink", "rose-product", "lilac"],
         badge: "BEST SELLER",
         rating: 4.9,
-        description: "Soft blush • Short almond"
+        description: "Soft blush • Short almond",
+        recentSales: 18
     },
 
     {
@@ -335,7 +343,8 @@ const products = [
         images: ["french-product", "pink", "peach"],
         badge: "FAVOURITE",
         rating: 4.9,
-        description: "Milky white • Oval"
+        description: "Milky white • Oval",
+        recentSales: 12
     },
 
     {
@@ -371,7 +380,8 @@ const products = [
         images: ["peach", "rose-product", "gold"],
         badge: "POPULAR",
         rating: 4.8,
-        description: "Peach gloss • Short"
+        description: "Peach gloss • Short",
+        recentSales: 21
     },
 
 
@@ -386,7 +396,8 @@ const products = [
         images: ["lilac", "chrome-product", "french-product"],
         badge: "HAND-PAINTED",
         rating: 4.9,
-        description: "Marble swirl • Hand-painted almond"
+        description: "Marble swirl • Hand-painted almond",
+        recentSales: 15
     },
 
     {
@@ -425,7 +436,8 @@ const products = [
         images: ["pink", "peach", "gold"],
         badge: "SELF CARE",
         rating: 4.9,
-        description: "Rose oil • 10ml"
+        description: "Rose oil • 10ml",
+        recentSales: 27
     },
 
     {
@@ -476,7 +488,8 @@ const products = [
         images: ["chrome-product", "lilac", "pink"],
         badge: "ESSENTIAL",
         rating: 4.7,
-        description: "Fine grit • Reusable"
+        description: "Fine grit • Reusable",
+        recentSales: 11
     },
 
     {
@@ -504,7 +517,8 @@ const products = [
         badge: "SET OF 3",
         generic: true,
         rating: 4.8,
-        description: "Pure silk • Gentle on hair"
+        description: "Pure silk • Gentle on hair",
+        recentSales: 16
     },
 
     {
@@ -556,7 +570,8 @@ const products = [
         badge: "PARTY READY",
         generic: true,
         rating: 4.8,
-        description: "Statement necklace + earrings"
+        description: "Statement necklace + earrings",
+        recentSales: 10
     },
 
     {
@@ -569,6 +584,7 @@ const products = [
         badge: "LIMITED",
         generic: true,
         rating: 4.9,
+        sale: 40,
         description: "Flower crown + hair vines"
     },
 
@@ -954,6 +970,12 @@ function productCardHTML(product) {
                 <span class="badge">
                     ${product.badge}
                 </span>
+
+                ${
+                    product.recentSales
+                    ? `<span class="badge-sales">🔥 ${product.recentSales}+ sold in 24h</span>`
+                    : ""
+                }
 
 
                 <button

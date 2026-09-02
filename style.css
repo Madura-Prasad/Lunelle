@@ -818,6 +818,36 @@ a {
     z-index: 3;
 }
 
+.badge-sales {
+    position: absolute;
+    right: 13px;
+    top: 13px;
+    background: #ff5a3c;
+    color: white;
+    padding: 6px 9px;
+    border-radius: 20px;
+    font-size: 7px;
+    letter-spacing: .5px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    box-shadow: 0 6px 14px rgba(255,90,60,.35);
+    animation: badgePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.06);
+    }
+
+}
+
 
 /* ------ image slider (3 photos per product) ------ */
 
@@ -1239,7 +1269,8 @@ a {
 #newsletterMessage {
     grid-column: 2;
     color: #eaa3b9;
-    font-size: 10px;
+    font-size: 15px;
+    font-weight: bold;
 }
 
 
