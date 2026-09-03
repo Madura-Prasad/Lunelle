@@ -19,14 +19,28 @@
 
 const AD_CONFIG = {
 
-    // Native banner, shown right under the hero section
-    nativeBanner: ``,
+    // Native banner, shown right under the hero section  ok
+    nativeBanner: `<script async="async" data-cfasync="false" src="https://pl31147896.profitableratecpmnetwork.com/805a878eca4c3b78c18a9750ae598e2e/invoke.js"></script>
+<div id="container-805a878eca4c3b78c18a9750ae598e2e"></div>
+`,
 
-    // 160 x 300 vertical banner, shown beside the shop grid
-    sidebarBanner: ``,
+    // 160 x 300 vertical banner, shown beside the shop grid  ok
+    sidebarBanner: `<script>
+  atOptions = {
+    'key' : 'fc97d7bcd00cc675470ce957cedb092d',
+    'format' : 'iframe',
+    'height' : 300,
+    'width' : 160,
+    'params' : {}
+  };
+</script>
+<script src="https://www.highrevenueformat.com/fc97d7bcd00cc675470ce957cedb092d/invoke.js"></script>
+`,
 
-    // Social bar, shown above the "Why Lunelle" section
-    socialBar: ``,
+    // Social bar, shown above the "Why Lunelle" section  ok
+    socialBar: `<script src="https://pl31147897.profitableratecpmnetwork.com/8d/db/86/8ddb868d20d4d249d31cb70955d45ea8.js"></script>
+
+`,
 
     // Popunder / interstitial script, fires once on page load
     popunder: ``
