@@ -4,7 +4,6 @@
    HTML / CSS / JAVASCRIPT ONLY
 ===================================================== */
 
-
 /* =====================================================
    AD CONFIG
    ---------------------------------------------------
@@ -18,14 +17,13 @@
 ===================================================== */
 
 const AD_CONFIG = {
-
-    // Native banner, shown right under the hero section  ok
+  // Native banner, shown right under the hero section  ok
     nativeBanner: `<script async="async" data-cfasync="false" src="https://pl31147896.profitableratecpmnetwork.com/805a878eca4c3b78c18a9750ae598e2e/invoke.js"></script>
 <div id="container-805a878eca4c3b78c18a9750ae598e2e"></div>
 `,
 
-    // 160 x 300 vertical banner, shown beside the shop grid  ok
-    sidebarBanner: `<script>
+  // 160 x 300 vertical banner, shown beside the shop grid  ok
+  sidebarBanner: `<script>
   atOptions = {
     'key' : 'fc97d7bcd00cc675470ce957cedb092d',
     'format' : 'iframe',
@@ -37,16 +35,12 @@ const AD_CONFIG = {
 <script src="https://www.highrevenueformat.com/fc97d7bcd00cc675470ce957cedb092d/invoke.js"></script>
 `,
 
-    // Social bar, shown above the "Why Lunelle" section  ok
-    socialBar: `<script src="https://pl31147897.profitableratecpmnetwork.com/8d/db/86/8ddb868d20d4d249d31cb70955d45ea8.js"></script>
+  // Social bar, shown above the "Why Lunelle" section  ok
+  socialBar: `<script src="https://pl31147897.profitableratecpmnetwork.com/8d/db/86/8ddb868d20d4d249d31cb70955d45ea8.js"></script>`,
 
-`,
-
-    // Popunder / interstitial script, fires once on page load
-    popunder: ``
-
+  // Popunder / interstitial script, fires once on page load
+  popunder: ``,
 };
-
 
 /* =====================================================
    PROMO CONFIG
@@ -58,20 +52,17 @@ const AD_CONFIG = {
 ===================================================== */
 
 const PROMO = {
+  code: "LUNELLE30",
 
-    code: "LUNELLE30",
+  discountPercent: 30,
 
-    discountPercent: 30,
+  freeShippingThreshold: 49.99,
 
-    freeShippingThreshold: 49.99,
+  shippingFee: 5.99,
 
-    shippingFee: 5.99,
-
-    // 3 days, 4 hours
-    countdownHours: (3 * 24) + 4
-
+  // 3 days, 4 hours
+  countdownHours: 3 * 24 + 4,
 };
-
 
 /* =====================================================
    PRODUCT PHOTOS
@@ -99,7 +90,6 @@ const PROMO = {
    product below for a working example.
 ===================================================== */
 
-
 /* =====================================================
    PHOTO SOURCES FOR ONE SLIDE
    ---------------------------------------------------
@@ -124,29 +114,18 @@ const PROMO = {
 ===================================================== */
 
 function buildPhotoCandidates(product, slideIndex) {
+  const candidates = [];
 
-    const candidates = [];
+  const ownPhoto = product[`image${slideIndex + 1}`];
 
+  if (ownPhoto) {
+    candidates.push(ownPhoto);
+  }
 
-    const ownPhoto =
-        product[`image${slideIndex + 1}`];
+  candidates.push(`images/products/${product.id}-${slideIndex + 1}.jpg`);
 
-    if (ownPhoto) {
-
-        candidates.push(ownPhoto);
-
-    }
-
-
-    candidates.push(
-        `images/products/${product.id}-${slideIndex + 1}.jpg`
-    );
-
-
-    return candidates;
-
+  return candidates;
 }
-
 
 /* =====================================================
    PHOTO LOADING (no card / DOM re-render)
@@ -161,64 +140,44 @@ function buildPhotoCandidates(product, slideIndex) {
 ===================================================== */
 
 function setPhotoSrc(imgEl, candidateList) {
+  if (!imgEl) return;
 
-    if (!imgEl) return;
+  imgEl.classList.remove("photo-ready");
 
+  const candidates = (candidateList || []).filter(Boolean);
 
-    imgEl.classList.remove("photo-ready");
+  let attempt = 0;
 
+  const tryNext = () => {
+    if (attempt >= candidates.length) {
+      // Nothing loaded — leave the swatch color showing
+      imgEl.removeAttribute("src");
 
-    const candidates =
-        (candidateList || []).filter(Boolean);
+      return;
+    }
 
-    let attempt = 0;
+    const candidate = candidates[attempt];
 
+    attempt++;
 
-    const tryNext = () => {
+    const preloader = new Image();
 
-        if (attempt >= candidates.length) {
+    preloader.onload = () => {
+      imgEl.src = candidate;
 
-            // Nothing loaded — leave the swatch color showing
-            imgEl.removeAttribute("src");
-
-            return;
-
-        }
-
-
-        const candidate =
-            candidates[attempt];
-
-        attempt++;
-
-
-        const preloader =
-            new Image();
-
-        preloader.onload = () => {
-
-            imgEl.src = candidate;
-
-            // Next frame, so the opacity transition actually runs
-            requestAnimationFrame(() => {
-
-                imgEl.classList.add("photo-ready");
-
-            });
-
-        };
-
-        preloader.onerror = tryNext;
-
-        preloader.src = candidate;
-
+      // Next frame, so the opacity transition actually runs
+      requestAnimationFrame(() => {
+        imgEl.classList.add("photo-ready");
+      });
     };
 
+    preloader.onerror = tryNext;
 
-    tryNext();
+    preloader.src = candidate;
+  };
 
+  tryNext();
 }
-
 
 /* =====================================================
    AD INJECTION
@@ -227,59 +186,33 @@ function setPhotoSrc(imgEl, candidateList) {
 ===================================================== */
 
 function injectAd(container, html) {
+  if (!container || !html || !html.trim()) return;
 
-    if (!container || !html || !html.trim()) return;
+  container.innerHTML = html;
 
+  // Re-create any <script> tags so the browser actually runs them
+  container.querySelectorAll("script").forEach((oldScript) => {
+    const newScript = document.createElement("script");
 
-    container.innerHTML = html;
-
-
-    // Re-create any <script> tags so the browser actually runs them
-    container.querySelectorAll("script").forEach(oldScript => {
-
-        const newScript = document.createElement("script");
-
-
-        Array.from(oldScript.attributes).forEach(attr => {
-
-            newScript.setAttribute(attr.name, attr.value);
-
-        });
-
-
-        newScript.textContent = oldScript.textContent;
-
-        oldScript.replaceWith(newScript);
-
+    Array.from(oldScript.attributes).forEach((attr) => {
+      newScript.setAttribute(attr.name, attr.value);
     });
 
-}
+    newScript.textContent = oldScript.textContent;
 
+    oldScript.replaceWith(newScript);
+  });
+}
 
 function loadAds() {
+  injectAd(document.getElementById("adNative"), AD_CONFIG.nativeBanner);
 
-    injectAd(
-        document.getElementById("adNative"),
-        AD_CONFIG.nativeBanner
-    );
+  injectAd(document.getElementById("adSidebar"), AD_CONFIG.sidebarBanner);
 
-    injectAd(
-        document.getElementById("adSidebar"),
-        AD_CONFIG.sidebarBanner
-    );
+  injectAd(document.getElementById("adSocial"), AD_CONFIG.socialBar);
 
-    injectAd(
-        document.getElementById("adSocial"),
-        AD_CONFIG.socialBar
-    );
-
-    injectAd(
-        document.getElementById("adPopunder"),
-        AD_CONFIG.popunder
-    );
-
+  injectAd(document.getElementById("adPopunder"), AD_CONFIG.popunder);
 }
-
 
 /* =====================================================
    PRODUCTS
@@ -320,303 +253,295 @@ function loadAds() {
 ===================================================== */
 
 const products = [
+  // ---------- PRESS-ONS ----------
 
-    // ---------- PRESS-ONS ----------
+  {
+    id: 1,
+    name: "Blush Cloud",
+    category: "press-on",
+    price: 18,
+    stock: 8,
+    images: ["pink", "rose-product", "lilac"],
+    badge: "BEST SELLER",
+    rating: 4.9,
+    description: "Soft blush • Short almond",
+    recentSales: 18,
+  },
 
-    {
-        id: 1,
-        name: "Blush Cloud",
-        category: "press-on",
-        price: 18,
-        stock: 8,
-        images: ["pink", "rose-product", "lilac"],
-        badge: "BEST SELLER",
-        rating: 4.9,
-        description: "Soft blush • Short almond",
-        recentSales: 18
-    },
+  {
+    id: 2,
+    name: "Mirror Chrome",
+    category: "press-on",
+    price: 22,
+    stock: 0,
+    images: ["chrome-product", "pink", "lilac"],
+    badge: "TRENDING",
+    rating: 4.8,
+    description: "Silver chrome • Medium",
+  },
 
-    {
-        id: 2,
-        name: "Mirror Chrome",
-        category: "press-on",
-        price: 22,
-        stock: 0,
-        images: ["chrome-product", "pink", "lilac"],
-        badge: "TRENDING",
-        rating: 4.8,
-        description: "Silver chrome • Medium"
-    },
+  {
+    id: 3,
+    name: "Clean French",
+    category: "press-on",
+    price: 19,
+    stock: 12,
+    images: ["french-product", "pink", "peach"],
+    badge: "FAVOURITE",
+    rating: 4.9,
+    description: "Milky white • Oval",
+    recentSales: 12,
+  },
 
-    {
-        id: 3,
-        name: "Clean French",
-        category: "press-on",
-        price: 19,
-        stock: 12,
-        images: ["french-product", "pink", "peach"],
-        badge: "FAVOURITE",
-        rating: 4.9,
-        description: "Milky white • Oval",
-        recentSales: 12
-    },
+  {
+    id: 4,
+    name: "Rose Glaze",
+    category: "press-on",
+    price: 20,
+    stock: 5,
+    images: ["rose-product", "berry", "pink"],
+    badge: "NEW",
+    rating: 4.9,
+    description: "Glossy rose • Almond",
+  },
 
-    {
-        id: 4,
-        name: "Rose Glaze",
-        category: "press-on",
-        price: 20,
-        stock: 5,
-        images: ["rose-product", "berry", "pink"],
-        badge: "NEW",
-        rating: 4.9,
-        description: "Glossy rose • Almond"
-    },
+  {
+    id: 5,
+    name: "Lilac Dream",
+    category: "press-on",
+    price: 18,
+    stock: 7,
+    images: ["lilac", "chrome-product", "pink"],
+    badge: "NEW",
+    rating: 4.8,
+    description: "Lilac shimmer • Coffin",
+  },
 
-    {
-        id: 5,
-        name: "Lilac Dream",
-        category: "press-on",
-        price: 18,
-        stock: 7,
-        images: ["lilac", "chrome-product", "pink"],
-        badge: "NEW",
-        rating: 4.8,
-        description: "Lilac shimmer • Coffin"
-    },
+  {
+    id: 6,
+    name: "Peach Pop",
+    category: "press-on",
+    price: 17,
+    stock: 10,
+    images: ["peach", "rose-product", "gold"],
+    badge: "POPULAR",
+    rating: 4.8,
+    description: "Peach gloss • Short",
+    recentSales: 21,
+  },
 
-    {
-        id: 6,
-        name: "Peach Pop",
-        category: "press-on",
-        price: 17,
-        stock: 10,
-        images: ["peach", "rose-product", "gold"],
-        badge: "POPULAR",
-        rating: 4.8,
-        description: "Peach gloss • Short",
-        recentSales: 21
-    },
+  // ---------- NAIL ART ----------
 
+  {
+    id: 10,
+    name: "Marble Swirl Art",
+    category: "nail-art",
+    price: 24,
+    stock: 9,
+    images: ["lilac", "chrome-product", "french-product"],
+    badge: "HAND-PAINTED",
+    rating: 4.9,
+    description: "Marble swirl • Hand-painted almond",
+    recentSales: 15,
+  },
 
-    // ---------- NAIL ART ----------
+  {
+    id: 11,
+    name: "Butterfly Chrome Art",
+    category: "nail-art",
+    price: 26,
+    stock: 6,
+    images: ["chrome-product", "berry", "lilac"],
+    badge: "STATEMENT",
+    rating: 4.8,
+    description: "3D butterfly • Chrome coffin",
+  },
 
-    {
-        id: 10,
-        name: "Marble Swirl Art",
-        category: "nail-art",
-        price: 24,
-        stock: 9,
-        images: ["lilac", "chrome-product", "french-product"],
-        badge: "HAND-PAINTED",
-        rating: 4.9,
-        description: "Marble swirl • Hand-painted almond",
-        recentSales: 15
-    },
+  {
+    id: 12,
+    name: "Glitter Ombre Art",
+    category: "nail-art",
+    price: 23,
+    stock: 8,
+    images: ["berry", "gold", "pink"],
+    badge: "SPARKLE",
+    rating: 4.9,
+    description: "Fine glitter ombre • Almond",
+  },
 
-    {
-        id: 11,
-        name: "Butterfly Chrome Art",
-        category: "nail-art",
-        price: 26,
-        stock: 6,
-        images: ["chrome-product", "berry", "lilac"],
-        badge: "STATEMENT",
-        rating: 4.8,
-        description: "3D butterfly • Chrome coffin"
-    },
+  // ---------- NAIL CARE ----------
 
-    {
-        id: 12,
-        name: "Glitter Ombre Art",
-        category: "nail-art",
-        price: 23,
-        stock: 8,
-        images: ["berry", "gold", "pink"],
-        badge: "SPARKLE",
-        rating: 4.9,
-        description: "Fine glitter ombre • Almond"
-    },
+  {
+    id: 8,
+    name: "Nail Care Oil",
+    category: "care",
+    price: 9,
+    stock: 15,
+    images: ["pink", "peach", "gold"],
+    badge: "SELF CARE",
+    rating: 4.9,
+    description: "Rose oil • 10ml",
+    recentSales: 27,
+  },
 
+  {
+    id: 20,
+    name: "Cuticle Butter Balm",
+    category: "care",
+    price: 11,
+    stock: 13,
+    images: ["gold", "peach", "pink"],
+    badge: "HYDRATING",
+    rating: 4.7,
+    description: "Shea + jojoba • 15ml",
+  },
 
-    // ---------- NAIL CARE ----------
+  {
+    id: 21,
+    name: "Strengthening Base Coat",
+    category: "care",
+    price: 13,
+    stock: 10,
+    images: ["french-product", "chrome-product", "pink"],
+    badge: "SELF CARE",
+    rating: 4.8,
+    description: "Keratin infused • 12ml",
+  },
 
-    {
-        id: 8,
-        name: "Nail Care Oil",
-        category: "care",
-        price: 9,
-        stock: 15,
-        images: ["pink", "peach", "gold"],
-        badge: "SELF CARE",
-        rating: 4.9,
-        description: "Rose oil • 10ml",
-        recentSales: 27
-    },
+  // ---------- TOOLS ----------
 
-    {
-        id: 20,
-        name: "Cuticle Butter Balm",
-        category: "care",
-        price: 11,
-        stock: 13,
-        images: ["gold", "peach", "pink"],
-        badge: "HYDRATING",
-        rating: 4.7,
-        description: "Shea + jojoba • 15ml"
-    },
+  {
+    id: 7,
+    name: "Prep & Push Kit",
+    category: "tools",
+    price: 12,
+    stock: 9,
+    images: ["french-product", "chrome-product", "pink"],
+    badge: "ESSENTIAL",
+    rating: 4.7,
+    description: "Prep & manicure essentials",
+  },
 
-    {
-        id: 21,
-        name: "Strengthening Base Coat",
-        category: "care",
-        price: 13,
-        stock: 10,
-        images: ["french-product", "chrome-product", "pink"],
-        badge: "SELF CARE",
-        rating: 4.8,
-        description: "Keratin infused • 12ml"
-    },
+  {
+    id: 9,
+    name: "Glass Nail File",
+    category: "tools",
+    price: 8,
+    stock: 11,
+    images: ["chrome-product", "lilac", "pink"],
+    badge: "ESSENTIAL",
+    rating: 4.7,
+    description: "Fine grit • Reusable",
+    recentSales: 11,
+  },
 
+  {
+    id: 22,
+    name: "Mini LED Lamp",
+    category: "tools",
+    price: 28,
+    stock: 4,
+    images: ["chrome-product", "gold", "pink"],
+    badge: "PRO",
+    rating: 4.6,
+    description: "Fast-cure gel lamp • USB-C",
+  },
 
-    // ---------- TOOLS ----------
+  // ---------- HAIR ----------
 
-    {
-        id: 7,
-        name: "Prep & Push Kit",
-        category: "tools",
-        price: 12,
-        stock: 9,
-        images: ["french-product", "chrome-product", "pink"],
-        badge: "ESSENTIAL",
-        rating: 4.7,
-        description: "Prep & manicure essentials"
-    },
+  {
+    id: 13,
+    name: "Silk Scrunchie Set",
+    category: "hair",
+    price: 14,
+    stock: 20,
+    images: ["berry", "gold", "mint"],
+    badge: "SET OF 3",
+    generic: true,
+    rating: 4.8,
+    description: "Pure silk • Gentle on hair",
+    recentSales: 16,
+  },
 
-    {
-        id: 9,
-        name: "Glass Nail File",
-        category: "tools",
-        price: 8,
-        stock: 11,
-        images: ["chrome-product", "lilac", "pink"],
-        badge: "ESSENTIAL",
-        rating: 4.7,
-        description: "Fine grit • Reusable",
-        recentSales: 11
-    },
+  {
+    id: 14,
+    name: "Pearl Hair Clips",
+    category: "hair",
+    price: 16,
+    stock: 14,
+    images: ["gold", "pink", "chrome-product"],
+    badge: "TRENDING",
+    generic: true,
+    rating: 4.9,
+    description: "Freshwater pearl • Set of 4",
+  },
 
-    {
-        id: 22,
-        name: "Mini LED Lamp",
-        category: "tools",
-        price: 28,
-        stock: 4,
-        images: ["chrome-product", "gold", "pink"],
-        badge: "PRO",
-        rating: 4.6,
-        description: "Fast-cure gel lamp • USB-C"
-    },
+  {
+    id: 15,
+    name: "Satin Headband",
+    category: "hair",
+    price: 15,
+    stock: 12,
+    images: ["mint", "berry", "lilac"],
+    badge: "NEW",
+    generic: true,
+    rating: 4.7,
+    description: "Padded satin • One size",
 
+    // YOUR OWN PHOTOS for this product — local files only.
+    // Drop real files into images/products/ and point to
+    // them here, e.g. "images/products/satin-headband-1.jpg".
+    // Leave them as empty strings ("") to just use the
+    // automatic images/products/<id>-<slide>.jpg convention
+    // (or the plain swatch color if no file exists there).
+    image1: "",
+    image2: "",
+    image3: "",
+  },
 
-    // ---------- HAIR ----------
+  // ---------- COSTUMES ----------
 
-    {
-        id: 13,
-        name: "Silk Scrunchie Set",
-        category: "hair",
-        price: 14,
-        stock: 20,
-        images: ["berry", "gold", "mint"],
-        badge: "SET OF 3",
-        generic: true,
-        rating: 4.8,
-        description: "Pure silk • Gentle on hair",
-        recentSales: 16
-    },
+  {
+    id: 16,
+    name: "Glam Party Jewel Set",
+    category: "costumes",
+    price: 32,
+    stock: 6,
+    images: ["gold", "berry", "chrome-product"],
+    badge: "PARTY READY",
+    generic: true,
+    rating: 4.8,
+    description: "Statement necklace + earrings",
+    recentSales: 10,
+  },
 
-    {
-        id: 14,
-        name: "Pearl Hair Clips",
-        category: "hair",
-        price: 16,
-        stock: 14,
-        images: ["gold", "pink", "chrome-product"],
-        badge: "TRENDING",
-        generic: true,
-        rating: 4.9,
-        description: "Freshwater pearl • Set of 4"
-    },
+  {
+    id: 17,
+    name: "Fairycore Accessory Kit",
+    category: "costumes",
+    price: 29,
+    stock: 5,
+    images: ["mint", "lilac", "pink"],
+    badge: "LIMITED",
+    generic: true,
+    rating: 4.9,
+    sale: 40,
+    description: "Flower crown + hair vines",
+  },
 
-    {
-        id: 15,
-        name: "Satin Headband",
-        category: "hair",
-        price: 15,
-        stock: 12,
-        images: ["mint", "berry", "lilac"],
-        badge: "NEW",
-        generic: true,
-        rating: 4.7,
-        description: "Padded satin • One size",
-
-        // YOUR OWN PHOTOS for this product — local files only.
-        // Drop real files into images/products/ and point to
-        // them here, e.g. "images/products/satin-headband-1.jpg".
-        // Leave them as empty strings ("") to just use the
-        // automatic images/products/<id>-<slide>.jpg convention
-        // (or the plain swatch color if no file exists there).
-        image1: "",
-        image2: "",
-        image3: ""
-    },
-
-
-    // ---------- COSTUMES ----------
-
-    {
-        id: 16,
-        name: "Glam Party Jewel Set",
-        category: "costumes",
-        price: 32,
-        stock: 6,
-        images: ["gold", "berry", "chrome-product"],
-        badge: "PARTY READY",
-        generic: true,
-        rating: 4.8,
-        description: "Statement necklace + earrings",
-        recentSales: 10
-    },
-
-    {
-        id: 17,
-        name: "Fairycore Accessory Kit",
-        category: "costumes",
-        price: 29,
-        stock: 5,
-        images: ["mint", "lilac", "pink"],
-        badge: "LIMITED",
-        generic: true,
-        rating: 4.9,
-        sale: 40,
-        description: "Flower crown + hair vines"
-    },
-
-    {
-        id: 18,
-        name: "Vintage Pin-Up Set",
-        category: "costumes",
-        price: 27,
-        stock: 0,
-        images: ["berry", "pink", "gold"],
-        badge: "COLLECTOR",
-        generic: true,
-        rating: 4.7,
-        description: "Hair scarf + cat-eye clips"
-    }
-
+  {
+    id: 18,
+    name: "Vintage Pin-Up Set",
+    category: "costumes",
+    price: 27,
+    stock: 0,
+    images: ["berry", "pink", "gold"],
+    badge: "COLLECTOR",
+    generic: true,
+    rating: 4.7,
+    description: "Hair scarf + cat-eye clips",
+  },
 ];
-
 
 /* =====================================================
    REVIEWS
@@ -627,137 +552,116 @@ const products = [
 ===================================================== */
 
 const reviews = [
+  {
+    name: "Emma",
+    initial: "E",
+    rating: 5,
+    quote:
+      "The clean French style is exactly the aesthetic I was looking for. So pretty!",
+  },
 
-    {
-        name: "Emma",
-        initial: "E",
-        rating: 5,
-        quote: "The clean French style is exactly the aesthetic I was looking for. So pretty!"
-    },
+  {
+    name: "Sophia",
+    initial: "S",
+    rating: 5,
+    quote:
+      "I absolutely love the soft pink collection. It gives such a beautiful everyday look.",
+  },
 
-    {
-        name: "Sophia",
-        initial: "S",
-        rating: 5,
-        quote: "I absolutely love the soft pink collection. It gives such a beautiful everyday look."
-    },
+  {
+    name: "Mia",
+    initial: "M",
+    rating: 5,
+    quote:
+      "Chrome nails are having a moment and these designs are seriously gorgeous.",
+  },
 
-    {
-        name: "Mia",
-        initial: "M",
-        rating: 5,
-        quote: "Chrome nails are having a moment and these designs are seriously gorgeous."
-    },
+  {
+    name: "Chloe",
+    initial: "C",
+    rating: 4.8,
+    quote:
+      "The nail art set held up for almost three weeks with zero chipping. Worth every penny.",
+  },
 
-    {
-        name: "Chloe",
-        initial: "C",
-        rating: 4.8,
-        quote: "The nail art set held up for almost three weeks with zero chipping. Worth every penny."
-    },
+  {
+    name: "Ava",
+    initial: "A",
+    rating: 5,
+    quote:
+      "Ordered the scrunchie set on a whim and now it's my go-to gift for friends.",
+  },
 
-    {
-        name: "Ava",
-        initial: "A",
-        rating: 5,
-        quote: "Ordered the scrunchie set on a whim and now it's my go-to gift for friends."
-    },
+  {
+    name: "Grace",
+    initial: "G",
+    rating: 4.7,
+    quote:
+      "Fast shipping to the US and the packaging alone felt like a treat to open.",
+  },
 
-    {
-        name: "Grace",
-        initial: "G",
-        rating: 4.7,
-        quote: "Fast shipping to the US and the packaging alone felt like a treat to open."
-    },
+  {
+    name: "Zara",
+    initial: "Z",
+    rating: 5,
+    quote:
+      "The pearl hair clips are so much sturdier than I expected for the price.",
+  },
 
-    {
-        name: "Zara",
-        initial: "Z",
-        rating: 5,
-        quote: "The pearl hair clips are so much sturdier than I expected for the price."
-    },
-
-    {
-        name: "Lily",
-        initial: "L",
-        rating: 4.9,
-        quote: "My go-to shop before any night out — the party jewel set matches everything."
-    }
-
+  {
+    name: "Lily",
+    initial: "L",
+    rating: 4.9,
+    quote:
+      "My go-to shop before any night out — the party jewel set matches everything.",
+  },
 ];
-
 
 /* =====================================================
    CART + SLIDER STATE
 ===================================================== */
 
-let cart =
-    JSON.parse(
-        localStorage.getItem(
-            "lunelle_cart"
-        ) || "[]"
-    );
-
+let cart = JSON.parse(localStorage.getItem("lunelle_cart") || "[]");
 
 let currentFilter = "all";
-
 
 // Tracks which image (0, 1 or 2) is showing for each product card
 let currentSlide = {};
 
-
 // Whether the promo coupon has been applied to the cart
-let couponApplied =
-    localStorage.getItem(
-        "lunelle_coupon_applied"
-    ) === "true";
-
+let couponApplied = localStorage.getItem("lunelle_coupon_applied") === "true";
 
 /* =====================================================
    ELEMENTS
 ===================================================== */
 
-const productsContainer =
-    document.getElementById("products");
+const productsContainer = document.getElementById("products");
 
-const cartElement =
-    document.getElementById("cart");
+const cartElement = document.getElementById("cart");
 
-const overlay =
-    document.getElementById("overlay");
+const overlay = document.getElementById("overlay");
 
-const cartItems =
-    document.getElementById("cartItems");
+const cartItems = document.getElementById("cartItems");
 
-const cartCount =
-    document.getElementById("cartCount");
+const cartCount = document.getElementById("cartCount");
 
-const emptyCart =
-    document.getElementById("emptyCart");
+const emptyCart = document.getElementById("emptyCart");
 
-const cartFooter =
-    document.getElementById("cartFooter");
+const cartFooter = document.getElementById("cartFooter");
 
-const subtotal =
-    document.getElementById("subtotal");
+const subtotal = document.getElementById("subtotal");
 
-const stockModal =
-    document.getElementById("stockModal");
+const stockModal = document.getElementById("stockModal");
 
-const promoModal =
-    document.getElementById("promoModal");
-
+const promoModal = document.getElementById("promoModal");
 
 /* =====================================================
    MONEY
 ===================================================== */
 
 function money(value) {
-
-    return "$" + value.toFixed(2);
-
+  return "$" + value.toFixed(2);
 }
-
 
 /* =====================================================
    STAR RATING
@@ -766,27 +670,16 @@ function money(value) {
 ===================================================== */
 
 function renderStars(rating) {
+  const filled = Math.round(rating);
 
-    const filled =
-        Math.round(rating);
+  let stars = "";
 
+  for (let i = 1; i <= 5; i++) {
+    stars += i <= filled ? "★" : `<span class="star-empty">★</span>`;
+  }
 
-    let stars = "";
-
-
-    for (let i = 1; i <= 5; i++) {
-
-        stars += i <= filled
-            ? "★"
-            : `<span class="star-empty">★</span>`;
-
-    }
-
-
-    return stars;
-
+  return stars;
 }
-
 
 /* =====================================================
    REVIEWS SLIDER
@@ -797,14 +690,11 @@ function renderStars(rating) {
 ===================================================== */
 
 function renderReviews() {
+  const track = document.getElementById("reviewTrack");
 
-    const track =
-        document.getElementById("reviewTrack");
+  if (!track) return;
 
-    if (!track) return;
-
-
-    const cardHTML = review => `
+  const cardHTML = (review) => `
 
         <article class="review">
 
@@ -836,24 +726,16 @@ function renderReviews() {
 
     `;
 
+  // Duplicate the list once so the loop can seamlessly
+  // jump from the end of the first copy to the start of
+  // the second without a visible gap.
+  const doubled = [...reviews, ...reviews];
 
-    // Duplicate the list once so the loop can seamlessly
-    // jump from the end of the first copy to the start of
-    // the second without a visible gap.
-    const doubled =
-        [...reviews, ...reviews];
+  track.innerHTML = doubled.map(cardHTML).join("");
 
-
-    track.innerHTML =
-        doubled.map(cardHTML).join("");
-
-
-    // Slower scroll for more reviews, faster for fewer
-    track.style.animationDuration =
-        (reviews.length * 12) + "s";
-
+  // Slower scroll for more reviews, faster for fewer
+  track.style.animationDuration = reviews.length * 12 + "s";
 }
-
 
 /* =====================================================
    SCROLL REVEAL
@@ -863,63 +745,37 @@ function renderReviews() {
 ===================================================== */
 
 function initScrollReveal() {
+  const targets = document.querySelectorAll(".reveal");
 
-    const targets =
-        document.querySelectorAll(".reveal");
+  if (!("IntersectionObserver" in window)) {
+    targets.forEach((el) => el.classList.add("in-view"));
 
+    return;
+  }
 
-    if (!("IntersectionObserver" in window)) {
+  const observer = new IntersectionObserver(
+    function (entries) {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
 
-        targets.forEach(
-            el => el.classList.add("in-view")
-        );
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
 
-        return;
-
-    }
-
-
-    const observer =
-        new IntersectionObserver(
-            function(entries) {
-
-                entries.forEach(entry => {
-
-                    if (entry.isIntersecting) {
-
-                        entry.target.classList.add("in-view");
-
-                        observer.unobserve(entry.target);
-
-                    }
-
-                });
-
-            },
-            { threshold: 0.15 }
-        );
-
-
-    targets.forEach(
-        el => observer.observe(el)
-    );
-
+  targets.forEach((el) => observer.observe(el));
 }
-
 
 /* =====================================================
    SAVE CART
 ===================================================== */
 
 function saveCart() {
-
-    localStorage.setItem(
-        "lunelle_cart",
-        JSON.stringify(cart)
-    );
-
+  localStorage.setItem("lunelle_cart", JSON.stringify(cart));
 }
-
 
 /* =====================================================
    RENDER PRODUCTS
@@ -932,22 +788,15 @@ function saveCart() {
 ===================================================== */
 
 function productCardHTML(product) {
+  const soldOut = product.stock <= 0;
 
-    const soldOut =
-        product.stock <= 0;
+  const slide = currentSlide[product.id] || 0;
 
-    const slide =
-        currentSlide[product.id] || 0;
+  const shapeClass = product.generic ? "generic" : "";
 
-    const shapeClass =
-        product.generic
-        ? "generic"
-        : "";
-
-
-    const dots =
-        product.images
-            .map((image, index) => `
+  const dots = product.images
+    .map(
+      (image, index) => `
                 <button
                     class="slide-dot
                     ${index === slide ? "active" : ""}"
@@ -955,11 +804,11 @@ function productCardHTML(product) {
                     data-index="${index}"
                     aria-label="Show photo ${index + 1}"
                 ></button>
-            `)
-            .join("");
+            `
+    )
+    .join("");
 
-
-    return `
+  return `
 
         <article
             class="product
@@ -986,7 +835,7 @@ function productCardHTML(product) {
                 </span>
 
                 ${
-                    product.recentSales
+                  product.recentSales
                     ? `<span class="badge-sales">🔥 ${product.recentSales}+ sold in 24h</span>`
                     : ""
                 }
@@ -1038,11 +887,7 @@ function productCardHTML(product) {
 
                     ${product.description}
 
-                    ${
-                        soldOut
-                        ? " • Currently unavailable"
-                        : ""
-                    }
+                    ${soldOut ? " • Currently unavailable" : ""}
 
                 </div>
 
@@ -1059,11 +904,7 @@ function productCardHTML(product) {
                         data-add="${product.id}"
                     >
 
-                        ${
-                            soldOut
-                            ? "Sold Out"
-                            : "Add to bag"
-                        }
+                        ${soldOut ? "Sold Out" : "Add to bag"}
 
                     </button>
 
@@ -1074,52 +915,29 @@ function productCardHTML(product) {
         </article>
 
     `;
-
 }
-
 
 function renderProducts() {
+  let list = products;
 
-    let list = products;
+  if (currentFilter !== "all") {
+    list = products.filter((product) => product.category === currentFilter);
+  }
 
+  productsContainer.innerHTML = list.map(productCardHTML).join("");
 
-    if (currentFilter !== "all") {
+  // Now that the <img> tags exist in the DOM, load each one's
+  // local photo, if one exists.
+  list.forEach((product) => {
+    const slide = currentSlide[product.id] || 0;
 
-        list =
-            products.filter(
-                product =>
-                    product.category ===
-                    currentFilter
-            );
+    const imgEl = productsContainer.querySelector(
+      `[data-photo="${product.id}"]`
+    );
 
-    }
-
-
-    productsContainer.innerHTML =
-        list.map(productCardHTML).join("");
-
-
-    // Now that the <img> tags exist in the DOM, load each one's
-    // local photo, if one exists.
-    list.forEach(product => {
-
-        const slide =
-            currentSlide[product.id] || 0;
-
-        const imgEl =
-            productsContainer.querySelector(
-                `[data-photo="${product.id}"]`
-            );
-
-        setPhotoSrc(
-            imgEl,
-            buildPhotoCandidates(product, slide)
-        );
-
-    });
-
+    setPhotoSrc(imgEl, buildPhotoCandidates(product, slide));
+  });
 }
-
 
 /* =====================================================
    UPDATE A CARD'S SLIDE IN PLACE
@@ -1132,233 +950,143 @@ function renderProducts() {
 ===================================================== */
 
 function updateProductSlide(productId) {
+  const product = products.find((item) => item.id === productId);
 
-    const product =
-        products.find(
-            item => item.id === productId
-        );
+  if (!product) return;
 
-    if (!product) return;
+  const slide = currentSlide[productId] || 0;
 
+  // Swap the background swatch color behind the photo
+  const imageWrap = productsContainer.querySelector(
+    `[data-image-wrap="${productId}"]`
+  );
 
-    const slide =
-        currentSlide[productId] || 0;
+  if (imageWrap) {
+    const swatchClasses = [
+      "pink",
+      "chrome-product",
+      "french-product",
+      "rose-product",
+      "lilac",
+      "peach",
+      "gold",
+      "mint",
+      "berry",
+    ];
 
+    imageWrap.classList.remove(...swatchClasses);
 
-    // Swap the background swatch color behind the photo
-    const imageWrap =
-        productsContainer.querySelector(
-            `[data-image-wrap="${productId}"]`
-        );
+    imageWrap.classList.add(product.images[slide]);
+  }
 
-    if (imageWrap) {
+  // Crossfade in the new photo (local only, nothing online)
+  const imgEl = productsContainer.querySelector(`[data-photo="${productId}"]`);
 
-        const swatchClasses =
-            ["pink", "chrome-product", "french-product",
-             "rose-product", "lilac", "peach", "gold",
-             "mint", "berry"];
+  setPhotoSrc(imgEl, buildPhotoCandidates(product, slide));
 
-        imageWrap.classList.remove(...swatchClasses);
+  // Update which dot is active
+  const dotsWrap = productsContainer.querySelector(
+    `[data-dots="${productId}"]`
+  );
 
-        imageWrap.classList.add(product.images[slide]);
-
-    }
-
-
-    // Crossfade in the new photo (local only, nothing online)
-    const imgEl =
-        productsContainer.querySelector(
-            `[data-photo="${productId}"]`
-        );
-
-    setPhotoSrc(
-        imgEl,
-        buildPhotoCandidates(product, slide)
-    );
-
-
-    // Update which dot is active
-    const dotsWrap =
-        productsContainer.querySelector(
-            `[data-dots="${productId}"]`
-        );
-
-    if (dotsWrap) {
-
-        dotsWrap
-            .querySelectorAll(".slide-dot")
-            .forEach(dot => {
-
-                dot.classList.toggle(
-                    "active",
-                    Number(dot.dataset.index) === slide
-                );
-
-            });
-
-    }
-
+  if (dotsWrap) {
+    dotsWrap.querySelectorAll(".slide-dot").forEach((dot) => {
+      dot.classList.toggle("active", Number(dot.dataset.index) === slide);
+    });
+  }
 }
-
 
 /* =====================================================
    SLIDER CONTROLS
 ===================================================== */
 
 function changeSlide(productId, direction) {
+  const product = products.find((item) => item.id === productId);
 
-    const product =
-        products.find(
-            item => item.id === productId
-        );
+  if (!product) return;
 
+  const total = product.images.length;
 
-    if (!product) return;
+  const current = currentSlide[productId] || 0;
 
+  currentSlide[productId] = (current + direction + total) % total;
 
-    const total =
-        product.images.length;
-
-    const current =
-        currentSlide[productId] || 0;
-
-
-    currentSlide[productId] =
-        (current + direction + total) % total;
-
-
-    updateProductSlide(productId);
-
+  updateProductSlide(productId);
 }
-
 
 function setSlide(productId, index) {
+  currentSlide[productId] = index;
 
-    currentSlide[productId] = index;
-
-    updateProductSlide(productId);
-
+  updateProductSlide(productId);
 }
-
 
 /* =====================================================
    ADD PRODUCT
 ===================================================== */
 
 function addToCart(productId) {
+  const product = products.find((item) => item.id === productId);
 
-    const product =
-        products.find(
-            item => item.id === productId
-        );
+  if (!product) return;
 
+  if (product.stock <= 0) {
+    openStockModal();
 
-    if (!product) return;
+    return;
+  }
 
+  let existing = cart.find((item) => item.id === productId);
 
-    if (product.stock <= 0) {
-
-        openStockModal();
-
-        return;
-
-    }
-
-
-    let existing =
-        cart.find(
-            item => item.id === productId
-        );
-
-
-    if (existing) {
-
-        if (
-            existing.quantity <
-            product.stock
-        ) {
-
-            existing.quantity++;
-
-        } else {
-
-            openStockModal();
-
-            return;
-
-        }
-
+  if (existing) {
+    if (existing.quantity < product.stock) {
+      existing.quantity++;
     } else {
+      openStockModal();
 
-        cart.push({
-
-            id: productId,
-            quantity: 1
-
-        });
-
+      return;
     }
+  } else {
+    cart.push({
+      id: productId,
+      quantity: 1,
+    });
+  }
 
+  saveCart();
 
-    saveCart();
+  renderCart();
 
-    renderCart();
-
-    openCart();
-
+  openCart();
 }
-
 
 /* =====================================================
    RENDER CART
 ===================================================== */
 
 function renderCart() {
+  const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
 
-    const totalItems =
-        cart.reduce(
-            (total, item) =>
-                total + item.quantity,
-            0
-        );
+  cartCount.textContent = totalItems;
 
+  if (cart.length === 0) {
+    cartItems.innerHTML = "";
 
-    cartCount.textContent =
-        totalItems;
+    emptyCart.style.display = "block";
 
+    cartFooter.style.display = "none";
 
-    if (cart.length === 0) {
+    return;
+  }
 
-        cartItems.innerHTML = "";
+  emptyCart.style.display = "none";
 
-        emptyCart.style.display =
-            "block";
+  cartFooter.style.display = "block";
 
-        cartFooter.style.display =
-            "none";
+  cartItems.innerHTML = cart
+    .map((item) => {
+      const product = products.find((p) => p.id === item.id);
 
-        return;
-
-    }
-
-
-    emptyCart.style.display =
-        "none";
-
-    cartFooter.style.display =
-        "block";
-
-
-    cartItems.innerHTML =
-        cart.map(item => {
-
-            const product =
-                products.find(
-                    p => p.id === item.id
-                );
-
-
-            return `
+      return `
 
                 <div class="cart-row">
 
@@ -1419,289 +1147,162 @@ function renderCart() {
                 </div>
 
             `;
+    })
+    .join("");
 
-        }).join("");
+  // Same load-after-insert pattern as the product grid
+  cart.forEach((item) => {
+    const product = products.find((p) => p.id === item.id);
 
+    const imgEl = cartItems.querySelector(`[data-cart-photo="${item.id}"]`);
 
-    // Same load-after-insert pattern as the product grid
-    cart.forEach(item => {
+    setPhotoSrc(imgEl, buildPhotoCandidates(product, 0));
+  });
 
-        const product =
-            products.find(p => p.id === item.id);
+  const merchandiseSubtotal = cart.reduce((sum, item) => {
+    const product = products.find((p) => p.id === item.id);
 
-        const imgEl =
-            cartItems.querySelector(
-                `[data-cart-photo="${item.id}"]`
-            );
+    return sum + product.price * item.quantity;
+  }, 0);
 
-        setPhotoSrc(
-            imgEl,
-            buildPhotoCandidates(product, 0)
-        );
+  const discount = couponApplied
+    ? merchandiseSubtotal * (PROMO.discountPercent / 100)
+    : 0;
 
-    });
+  const shipping =
+    merchandiseSubtotal >= PROMO.freeShippingThreshold ? 0 : PROMO.shippingFee;
 
+  const grandTotalValue = merchandiseSubtotal - discount + shipping;
 
-    const merchandiseSubtotal =
-        cart.reduce(
-            (sum, item) => {
+  subtotal.textContent = money(merchandiseSubtotal);
 
-                const product =
-                    products.find(
-                        p => p.id === item.id
-                    );
+  document
+    .getElementById("discountRow")
+    .classList.toggle("show", couponApplied);
 
-                return sum +
-                    (
-                        product.price *
-                        item.quantity
-                    );
+  document.getElementById("discountAmount").textContent = "−" + money(discount);
 
-            },
-            0
-        );
+  document.getElementById("shippingAmount").textContent =
+    shipping === 0 ? "FREE" : money(shipping);
 
-
-    const discount =
-        couponApplied
-            ? merchandiseSubtotal *
-              (PROMO.discountPercent / 100)
-            : 0;
-
-    const shipping =
-        merchandiseSubtotal >=
-        PROMO.freeShippingThreshold
-            ? 0
-            : PROMO.shippingFee;
-
-    const grandTotalValue =
-        merchandiseSubtotal -
-        discount +
-        shipping;
-
-
-    subtotal.textContent =
-        money(merchandiseSubtotal);
-
-
-    document
-        .getElementById("discountRow")
-        .classList.toggle(
-            "show",
-            couponApplied
-        );
-
-    document.getElementById(
-        "discountAmount"
-    ).textContent =
-        "−" + money(discount);
-
-    document.getElementById(
-        "shippingAmount"
-    ).textContent =
-        shipping === 0
-            ? "FREE"
-            : money(shipping);
-
-    document.getElementById(
-        "grandTotal"
-    ).textContent =
-        money(grandTotalValue);
-
+  document.getElementById("grandTotal").textContent = money(grandTotalValue);
 }
-
 
 /* =====================================================
    COUPON
 ===================================================== */
 
 function applyCoupon() {
+  const input = document.getElementById("couponInput");
 
-    const input =
-        document.getElementById("couponInput");
+  const message = document.getElementById("couponMessage");
 
-    const message =
-        document.getElementById("couponMessage");
+  const entered = input.value.trim().toUpperCase();
 
-    const entered =
-        input.value.trim().toUpperCase();
+  if (!entered) {
+    message.textContent = "Enter a code first.";
 
+    message.classList.remove("success");
 
-    if (!entered) {
+    return;
+  }
 
-        message.textContent =
-            "Enter a code first.";
+  if (entered === PROMO.code) {
+    couponApplied = true;
 
-        message.classList.remove("success");
+    localStorage.setItem("lunelle_coupon_applied", "true");
 
-        return;
+    message.textContent = `${PROMO.discountPercent}% off applied ♡`;
 
-    }
+    message.classList.add("success");
+  } else {
+    couponApplied = false;
 
+    localStorage.setItem("lunelle_coupon_applied", "false");
 
-    if (entered === PROMO.code) {
+    message.textContent = "That code isn't valid.";
 
-        couponApplied = true;
+    message.classList.remove("success");
+  }
 
-        localStorage.setItem(
-            "lunelle_coupon_applied",
-            "true"
-        );
-
-        message.textContent =
-            `${PROMO.discountPercent}% off applied ♡`;
-
-        message.classList.add("success");
-
-    } else {
-
-        couponApplied = false;
-
-        localStorage.setItem(
-            "lunelle_coupon_applied",
-            "false"
-        );
-
-        message.textContent =
-            "That code isn't valid.";
-
-        message.classList.remove("success");
-
-    }
-
-
-    renderCart();
-
+  renderCart();
 }
-
 
 /* =====================================================
    QUANTITY
 ===================================================== */
 
-function changeQuantity(
-    productId,
-    amount
-) {
+function changeQuantity(productId, amount) {
+  const item = cart.find((x) => x.id === productId);
 
-    const item =
-        cart.find(
-            x => x.id === productId
-        );
+  const product = products.find((x) => x.id === productId);
 
+  if (!item || !product) return;
 
-    const product =
-        products.find(
-            x => x.id === productId
-        );
+  item.quantity += amount;
 
+  if (item.quantity > product.stock) {
+    item.quantity = product.stock;
+  }
 
-    if (!item || !product) return;
+  if (item.quantity <= 0) {
+    cart = cart.filter((x) => x.id !== productId);
+  }
 
+  saveCart();
 
-    item.quantity += amount;
-
-
-    if (
-        item.quantity >
-        product.stock
-    ) {
-
-        item.quantity =
-            product.stock;
-
-    }
-
-
-    if (item.quantity <= 0) {
-
-        cart =
-            cart.filter(
-                x => x.id !== productId
-            );
-
-    }
-
-
-    saveCart();
-
-    renderCart();
-
+  renderCart();
 }
-
 
 /* =====================================================
    REMOVE
 ===================================================== */
 
 function removeProduct(productId) {
+  cart = cart.filter((item) => item.id !== productId);
 
-    cart =
-        cart.filter(
-            item => item.id !== productId
-        );
+  saveCart();
 
-
-    saveCart();
-
-    renderCart();
-
+  renderCart();
 }
-
 
 /* =====================================================
    OPEN CART
 ===================================================== */
 
 function openCart() {
+  cartElement.classList.add("open");
 
-    cartElement.classList.add("open");
+  overlay.classList.add("show");
 
-    overlay.classList.add("show");
-
-    document.body.style.overflow =
-        "hidden";
-
+  document.body.style.overflow = "hidden";
 }
-
 
 /* =====================================================
    CLOSE CART
 ===================================================== */
 
 function closeCart() {
+  cartElement.classList.remove("open");
 
-    cartElement.classList.remove("open");
+  overlay.classList.remove("show");
 
-    overlay.classList.remove("show");
-
-    document.body.style.overflow =
-        "";
-
+  document.body.style.overflow = "";
 }
-
 
 /* =====================================================
    STOCK MODAL
 ===================================================== */
 
 function openStockModal() {
-
-    stockModal.classList.add("show");
-
+  stockModal.classList.add("show");
 }
-
 
 function closeStockModal() {
+  stockModal.classList.remove("show");
 
-    stockModal.classList.remove("show");
-
-    document.getElementById(
-        "stockMessage"
-    ).textContent = "";
-
+  document.getElementById("stockMessage").textContent = "";
 }
-
 
 /* =====================================================
    PROMO POPUP + COUNTDOWN
@@ -1713,641 +1314,321 @@ function closeStockModal() {
 ===================================================== */
 
 function getPromoEndTime() {
+  const stored = Number(localStorage.getItem("lunelle_promo_end"));
 
-    const stored =
-        Number(
-            localStorage.getItem("lunelle_promo_end")
-        );
+  if (stored && stored > Date.now()) {
+    return stored;
+  }
 
+  const newEnd = Date.now() + PROMO.countdownHours * 60 * 60 * 1000;
 
-    if (stored && stored > Date.now()) {
+  localStorage.setItem("lunelle_promo_end", String(newEnd));
 
-        return stored;
-
-    }
-
-
-    const newEnd =
-        Date.now() +
-        (PROMO.countdownHours * 60 * 60 * 1000);
-
-    localStorage.setItem(
-        "lunelle_promo_end",
-        String(newEnd)
-    );
-
-    return newEnd;
-
+  return newEnd;
 }
-
 
 function updatePromoCountdown() {
+  const remaining = getPromoEndTime() - Date.now();
 
-    const remaining =
-        getPromoEndTime() - Date.now();
+  const totalSeconds = Math.max(0, Math.floor(remaining / 1000));
 
-    const totalSeconds =
-        Math.max(
-            0,
-            Math.floor(remaining / 1000)
-        );
+  const days = Math.floor(totalSeconds / 86400);
 
-    const days =
-        Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
 
-    const hours =
-        Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
 
-    const minutes =
-        Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
 
-    const seconds =
-        totalSeconds % 60;
+  const pad = (value) => String(value).padStart(2, "0");
 
+  document.getElementById("promoDays").textContent = pad(days);
 
-    const pad =
-        value => String(value).padStart(2, "0");
+  document.getElementById("promoHours").textContent = pad(hours);
 
+  document.getElementById("promoMinutes").textContent = pad(minutes);
 
-    document.getElementById("promoDays").textContent =
-        pad(days);
-
-    document.getElementById("promoHours").textContent =
-        pad(hours);
-
-    document.getElementById("promoMinutes").textContent =
-        pad(minutes);
-
-    document.getElementById("promoSeconds").textContent =
-        pad(seconds);
-
+  document.getElementById("promoSeconds").textContent = pad(seconds);
 }
-
 
 function openPromoModal() {
+  document.getElementById("promoCodeDisplay").textContent = PROMO.code;
 
-    document.getElementById(
-        "promoCodeDisplay"
-    ).textContent = PROMO.code;
+  document.getElementById("promoCopyMessage").textContent = "";
 
-    document.getElementById(
-        "promoCopyMessage"
-    ).textContent = "";
-
-    promoModal.classList.add("show");
-
+  promoModal.classList.add("show");
 }
-
 
 function closePromoModal() {
-
-    promoModal.classList.remove("show");
-
+  promoModal.classList.remove("show");
 }
-
 
 function copyPromoCode() {
+  const message = document.getElementById("promoCopyMessage");
 
-    const message =
-        document.getElementById("promoCopyMessage");
+  const showCopied = () => {
+    message.textContent = "Code copied ♡";
+  };
 
+  const showFailed = () => {
+    message.textContent = `Couldn't copy — code is ${PROMO.code}`;
+  };
 
-    const showCopied = () => {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard
+      .writeText(PROMO.code)
+      .then(showCopied)
+      .catch(showFailed);
 
-        message.textContent =
-            "Code copied ♡";
+    return;
+  }
 
-    };
+  // Fallback for browsers without the Clipboard API
+  try {
+    const temp = document.createElement("textarea");
 
-    const showFailed = () => {
+    temp.value = PROMO.code;
 
-        message.textContent =
-            `Couldn't copy — code is ${PROMO.code}`;
+    temp.style.position = "fixed";
 
-    };
+    temp.style.opacity = "0";
 
+    document.body.appendChild(temp);
 
-    if (
-        navigator.clipboard &&
-        navigator.clipboard.writeText
-    ) {
+    temp.select();
 
-        navigator.clipboard
-            .writeText(PROMO.code)
-            .then(showCopied)
-            .catch(showFailed);
+    document.execCommand("copy");
 
-        return;
+    temp.remove();
 
-    }
-
-
-    // Fallback for browsers without the Clipboard API
-    try {
-
-        const temp =
-            document.createElement("textarea");
-
-        temp.value = PROMO.code;
-
-        temp.style.position = "fixed";
-
-        temp.style.opacity = "0";
-
-        document.body.appendChild(temp);
-
-        temp.select();
-
-        document.execCommand("copy");
-
-        temp.remove();
-
-        showCopied();
-
-    } catch (error) {
-
-        showFailed();
-
-    }
-
+    showCopied();
+  } catch (error) {
+    showFailed();
+  }
 }
-
 
 /* =====================================================
    PRODUCT EVENTS
    (add to bag + slider arrows + slider dots)
 ===================================================== */
 
-productsContainer.addEventListener(
-    "click",
-    function(event) {
+productsContainer.addEventListener("click", function (event) {
+  const addButton = event.target.closest("[data-add]");
 
-        const addButton =
-            event.target.closest("[data-add]");
+  if (addButton) {
+    addToCart(Number(addButton.dataset.add));
 
-        if (addButton) {
+    return;
+  }
 
-            addToCart(
-                Number(addButton.dataset.add)
-            );
+  const prevButton = event.target.closest("[data-slide-prev]");
 
-            return;
+  if (prevButton) {
+    changeSlide(Number(prevButton.dataset.slidePrev), -1);
 
-        }
+    return;
+  }
 
+  const nextButton = event.target.closest("[data-slide-next]");
 
-        const prevButton =
-            event.target.closest("[data-slide-prev]");
+  if (nextButton) {
+    changeSlide(Number(nextButton.dataset.slideNext), 1);
 
-        if (prevButton) {
+    return;
+  }
 
-            changeSlide(
-                Number(prevButton.dataset.slidePrev),
-                -1
-            );
+  const dotButton = event.target.closest("[data-dot]");
 
-            return;
-
-        }
-
-
-        const nextButton =
-            event.target.closest("[data-slide-next]");
-
-        if (nextButton) {
-
-            changeSlide(
-                Number(nextButton.dataset.slideNext),
-                1
-            );
-
-            return;
-
-        }
-
-
-        const dotButton =
-            event.target.closest("[data-dot]");
-
-        if (dotButton) {
-
-            setSlide(
-                Number(dotButton.dataset.dot),
-                Number(dotButton.dataset.index)
-            );
-
-        }
-
-    }
-);
-
+  if (dotButton) {
+    setSlide(Number(dotButton.dataset.dot), Number(dotButton.dataset.index));
+  }
+});
 
 /* =====================================================
    CART EVENTS
 ===================================================== */
 
-cartItems.addEventListener(
-    "click",
-    function(event) {
+cartItems.addEventListener("click", function (event) {
+  if (event.target.dataset.plus) {
+    changeQuantity(Number(event.target.dataset.plus), 1);
+  }
 
-        if (
-            event.target.dataset.plus
-        ) {
+  if (event.target.dataset.minus) {
+    changeQuantity(Number(event.target.dataset.minus), -1);
+  }
 
-            changeQuantity(
-                Number(
-                    event.target.dataset.plus
-                ),
-                1
-            );
-
-        }
-
-
-        if (
-            event.target.dataset.minus
-        ) {
-
-            changeQuantity(
-                Number(
-                    event.target.dataset.minus
-                ),
-                -1
-            );
-
-        }
-
-
-        if (
-            event.target.dataset.remove
-        ) {
-
-            removeProduct(
-                Number(
-                    event.target.dataset.remove
-                )
-            );
-
-        }
-
-    }
-);
-
+  if (event.target.dataset.remove) {
+    removeProduct(Number(event.target.dataset.remove));
+  }
+});
 
 /* =====================================================
    FILTERS
 ===================================================== */
 
-document
-    .getElementById("filters")
-    .addEventListener(
-        "click",
-        function(event) {
+document.getElementById("filters").addEventListener("click", function (event) {
+  const button = event.target.closest(".filter");
 
-            const button =
-                event.target.closest(
-                    ".filter"
-                );
+  if (!button) return;
 
+  document
+    .querySelectorAll(".filter")
+    .forEach((item) => item.classList.remove("active"));
 
-            if (!button) return;
+  button.classList.add("active");
 
+  currentFilter = button.dataset.filter;
 
-            document
-                .querySelectorAll(
-                    ".filter"
-                )
-                .forEach(
-                    item =>
-                        item.classList.remove(
-                            "active"
-                        )
-                );
-
-
-            button.classList.add("active");
-
-
-            currentFilter =
-                button.dataset.filter;
-
-
-            renderProducts();
-
-        }
-    );
-
+  renderProducts();
+});
 
 /* =====================================================
    CART OPEN/CLOSE
 ===================================================== */
 
-document
-    .getElementById("openCart")
-    .addEventListener(
-        "click",
-        openCart
-    );
+document.getElementById("openCart").addEventListener("click", openCart);
 
+document.getElementById("closeCart").addEventListener("click", closeCart);
+
+overlay.addEventListener("click", closeCart);
 
 document
-    .getElementById("closeCart")
-    .addEventListener(
-        "click",
-        closeCart
-    );
-
-
-overlay.addEventListener(
-    "click",
-    closeCart
-);
-
-
-document
-    .getElementById(
-        "continueShopping"
-    )
-    .addEventListener(
-        "click",
-        closeCart
-    );
-
+  .getElementById("continueShopping")
+  .addEventListener("click", closeCart);
 
 /* =====================================================
    COUPON EVENTS
 ===================================================== */
 
-document
-    .getElementById("applyCoupon")
-    .addEventListener(
-        "click",
-        applyCoupon
-    );
-
+document.getElementById("applyCoupon").addEventListener("click", applyCoupon);
 
 document
-    .getElementById("couponInput")
-    .addEventListener(
-        "keydown",
-        function(event) {
-
-            if (event.key === "Enter") {
-
-                applyCoupon();
-
-            }
-
-        }
-    );
-
+  .getElementById("couponInput")
+  .addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      applyCoupon();
+    }
+  });
 
 /* =====================================================
    CHECKOUT
 ===================================================== */
 
-document
-    .getElementById("checkout")
-    .addEventListener(
-        "click",
-        function() {
-
-            /*
+document.getElementById("checkout").addEventListener("click", function () {
+  /*
                 Demo storefront behavior:
                 checkout opens stock notification.
             */
 
-            openStockModal();
-
-        }
-    );
-
+  openStockModal();
+});
 
 /* =====================================================
    MODAL
 ===================================================== */
 
 document
-    .getElementById("closeModal")
-    .addEventListener(
-        "click",
-        closeStockModal
-    );
+  .getElementById("closeModal")
+  .addEventListener("click", closeStockModal);
 
-
-stockModal.addEventListener(
-    "click",
-    function(event) {
-
-        if (
-            event.target ===
-            stockModal
-        ) {
-
-            closeStockModal();
-
-        }
-
-    }
-);
-
+stockModal.addEventListener("click", function (event) {
+  if (event.target === stockModal) {
+    closeStockModal();
+  }
+});
 
 /* =====================================================
    PROMO MODAL
 ===================================================== */
 
 document
-    .getElementById("closePromoModal")
-    .addEventListener(
-        "click",
-        closePromoModal
-    );
+  .getElementById("closePromoModal")
+  .addEventListener("click", closePromoModal);
 
+promoModal.addEventListener("click", function (event) {
+  if (event.target === promoModal) {
+    closePromoModal();
+  }
+});
 
-promoModal.addEventListener(
-    "click",
-    function(event) {
+document.getElementById("promoGetNow").addEventListener("click", function () {
+  closePromoModal();
 
-        if (
-            event.target ===
-            promoModal
-        ) {
-
-            closePromoModal();
-
-        }
-
-    }
-);
-
+  document.getElementById("shop").scrollIntoView({ behavior: "smooth" });
+});
 
 document
-    .getElementById("promoGetNow")
-    .addEventListener(
-        "click",
-        function() {
-
-            closePromoModal();
-
-            document
-                .getElementById("shop")
-                .scrollIntoView({ behavior: "smooth" });
-
-        }
-    );
-
-
-document
-    .getElementById("promoCopyButton")
-    .addEventListener(
-        "click",
-        copyPromoCode
-    );
-
+  .getElementById("promoCopyButton")
+  .addEventListener("click", copyPromoCode);
 
 /* =====================================================
    STOCK EMAIL
 ===================================================== */
 
 document
-    .getElementById("stockForm")
-    .addEventListener(
-        "submit",
-        function(event) {
+  .getElementById("stockForm")
+  .addEventListener("submit", function (event) {
+    event.preventDefault();
 
-            event.preventDefault();
+    const email = document.getElementById("stockEmail").value.trim();
 
+    if (!email) return;
 
-            const email =
-                document
-                    .getElementById(
-                        "stockEmail"
-                    )
-                    .value
-                    .trim();
-
-
-            if (!email) return;
-
-
-            /*
+    /*
                 HTML/JS-only version:
                 Save email locally in browser.
             */
 
-            let emails =
-                JSON.parse(
-                    localStorage.getItem(
-                        "lunelle_notify_emails"
-                    ) || "[]"
-                );
-
-
-            if (
-                !emails.includes(email)
-            ) {
-
-                emails.push(email);
-
-            }
-
-
-            localStorage.setItem(
-                "lunelle_notify_emails",
-                JSON.stringify(emails)
-            );
-
-
-            document
-                .getElementById(
-                    "stockMessage"
-                )
-                .textContent =
-                "You're on the list ♡ We'll let you know when it's back.";
-
-
-            document
-                .getElementById(
-                    "stockEmail"
-                )
-                .value = "";
-
-        }
+    let emails = JSON.parse(
+      localStorage.getItem("lunelle_notify_emails") || "[]"
     );
 
+    if (!emails.includes(email)) {
+      emails.push(email);
+    }
+
+    localStorage.setItem("lunelle_notify_emails", JSON.stringify(emails));
+
+    document.getElementById("stockMessage").textContent =
+      "You're on the list ♡ We'll let you know when it's back.";
+
+    document.getElementById("stockEmail").value = "";
+  });
 
 /* =====================================================
    NEWSLETTER
 ===================================================== */
 
 document
-    .getElementById(
-        "newsletterForm"
-    )
-    .addEventListener(
-        "submit",
-        function(event) {
+  .getElementById("newsletterForm")
+  .addEventListener("submit", function (event) {
+    event.preventDefault();
 
-            event.preventDefault();
+    const email = document.getElementById("newsletterEmail").value.trim();
 
+    if (!email) return;
 
-            const email =
-                document
-                    .getElementById(
-                        "newsletterEmail"
-                    )
-                    .value
-                    .trim();
+    localStorage.setItem("lunelle_newsletter_email", email);
 
+    document.getElementById("newsletterMessage").textContent =
+      "Welcome to the pretty list ♡";
 
-            if (!email) return;
-
-
-            localStorage.setItem(
-                "lunelle_newsletter_email",
-                email
-            );
-
-
-            document
-                .getElementById(
-                    "newsletterMessage"
-                )
-                .textContent =
-                "Welcome to the pretty list ♡";
-
-
-            document
-                .getElementById(
-                    "newsletterEmail"
-                )
-                .value = "";
-
-        }
-    );
-
+    document.getElementById("newsletterEmail").value = "";
+  });
 
 /* =====================================================
    ESC KEY
 ===================================================== */
 
-document.addEventListener(
-    "keydown",
-    function(event) {
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") {
+    closeCart();
 
-        if (event.key === "Escape") {
+    closeStockModal();
 
-            closeCart();
-
-            closeStockModal();
-
-            closePromoModal();
-
-        }
-
-    }
-);
-
+    closePromoModal();
+  }
+});
 
 /* =====================================================
    INITIALIZE
@@ -2363,13 +1644,11 @@ renderReviews();
 
 initScrollReveal();
 
-
 // Countdown keeps running (and looping) in the background
 // regardless of whether the popup is open
 updatePromoCountdown();
 
 setInterval(updatePromoCountdown, 1000);
-
 
 // Show the discount popup shortly after the page loads
 setTimeout(openPromoModal, 1200);
