@@ -1651,4 +1651,4 @@ updatePromoCountdown();
 setInterval(updatePromoCountdown, 1000);
 
 // Show the discount popup shortly after the page loads
-setTimeout(openPromoModal, 1200);
+setTimeout(openPromoModal, 4000);
